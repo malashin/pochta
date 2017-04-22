@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/mail"
 	"net/smtp"
@@ -53,7 +52,7 @@ func SendMail(smtpserver string, auth smtp.Auth, from mail.Address, to mail.Addr
 	// create the smtp connection
 	c, err := smtp.Dial(smtpserver)
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	// set some TLS options, so we can make sure a non-verified cert won't stop us sending
@@ -63,34 +62,34 @@ func SendMail(smtpserver string, auth smtp.Auth, from mail.Address, to mail.Addr
 		ServerName:         host,
 	}
 	if err = c.StartTLS(tlc); err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	// auth stuff
 	if err = c.Auth(auth); err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	// To && From
 	if err = c.Mail(from.Address); err != nil {
-		log.Panic(err)
+		return err
 	}
 	if err = c.Rcpt(to.Address); err != nil {
-		log.Panic(err)
+		return err
 	}
 
 	// Data
 	w, err := c.Data()
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 	_, err = w.Write([]byte(message))
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 	err = w.Close()
 	if err != nil {
-		log.Panic(err)
+		return err
 	}
 	c.Quit()
 	return err
