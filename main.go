@@ -52,7 +52,7 @@ func SendMail(smtpserver string, auth smtp.Auth, from mail.Address, to mail.Addr
 	// create the smtp connection
 	c, err := smtp.Dial(smtpserver)
 	if err != nil {
-		return err
+		return errors.New("smtp.Dial: " + err.Error())
 	}
 
 	// set some TLS options, so we can make sure a non-verified cert won't stop us sending
@@ -62,35 +62,35 @@ func SendMail(smtpserver string, auth smtp.Auth, from mail.Address, to mail.Addr
 		ServerName:         host,
 	}
 	if err = c.StartTLS(tlc); err != nil {
-		return err
+		return errors.New("client.StartTLS: " + err.Error())
 	}
 
 	// auth stuff
 	if err = c.Auth(auth); err != nil {
-		return err
+		return errors.New("client.Auth: " + err.Error())
 	}
 
 	// To && From
 	if err = c.Mail(from.Address); err != nil {
-		return err
+		return errors.New("client.Mail(" + from.Address + "): " + err.Error())
 	}
 	if err = c.Rcpt(to.Address); err != nil {
-		return err
+		return errors.New("client.Rcpt(" + to.Address + "): " + err.Error())
 	}
 
 	// Data
 	w, err := c.Data()
 	if err != nil {
-		return err
+		return errors.New("client.Data: " + err.Error())
 	}
 	_, err = w.Write([]byte(message))
 	if err != nil {
-		return err
+		return errors.New("writeCloser.Write: " + err.Error())
 	}
 	err = w.Close()
 	if err != nil {
-		return err
+		return errors.New("writeCloser.Close: " + err.Error())
 	}
 	c.Quit()
-	return err
+	return nil
 }
